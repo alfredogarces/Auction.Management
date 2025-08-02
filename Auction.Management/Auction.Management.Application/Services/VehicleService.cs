@@ -5,44 +5,62 @@ using Auction.Management.Domain.Entities.Vehicles;
 using Auction.Management.Domain.Enums;
 using Auction.Management.Domain.Interfaces;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 
 namespace Auction.Management.Application.Services
 {
     public class VehicleService : IVehicleService
     {
-        private IVehicleRepository _vehicleRepository;
+        private readonly IVehicleRepository _vehicleRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<VehicleService> _logger;
 
-        public VehicleService(IVehicleRepository vehicleRepository, IMapper mapper)
+        public VehicleService(
+            IVehicleRepository vehicleRepository,
+            IMapper mapper,
+            ILogger<VehicleService> logger)
         {
-            this._vehicleRepository = vehicleRepository;
-            this._mapper = mapper;
+            _vehicleRepository = vehicleRepository;
+            _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<Result<VehicleDto>> AddVehicle(VehicleDto vehicleDto)
         {
+            _logger.LogInformation("Adding new vehicle with ID {VehicleId}", vehicleDto.Id);
+
             try
             {
-                Vehicle vehicle = _mapper.Map<Vehicle>(vehicleDto);
+                var vehicle = _mapper.Map<Vehicle>(vehicleDto);
 
-                if (await _vehicleRepository.GetByIdAsync(vehicle.Id) != null)
+                var existingVehicle = await _vehicleRepository.GetByIdAsync(vehicle.Id);
+                if (existingVehicle != null)
+                {
+                    _logger.LogWarning("Vehicle with ID {VehicleId} already exists", vehicle.Id);
                     return Result<VehicleDto>.Failure(new Error($"Vehicle with ID {vehicle.Id} already exists."));
+                }
 
                 await _vehicleRepository.AddAsync(vehicle);
+
+                _logger.LogInformation("Vehicle with ID {VehicleId} added successfully", vehicle.Id);
 
                 return Result<VehicleDto>.Success(vehicleDto);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error adding vehicle with ID {VehicleId}", vehicleDto.Id);
                 return Result<VehicleDto>.Failure(new Error(ex.Message));
             }
         }
 
         public async Task<Result<IEnumerable<VehicleDto>>> SearchAsync(VehicleType? type = null,
                                                                         string? manufacturer = null,
-                                                                        string? model = null, 
+                                                                        string? model = null,
                                                                         int? year = null)
         {
+            _logger.LogInformation("Searching for vehicles with filters: Type={Type}, Manufacturer={Manufacturer}, Model={Model}, Year={Year}",
+                type, manufacturer, model, year);
+
             try
             {
                 var allVehicles = await _vehicleRepository.GetAllAsync();
@@ -56,14 +74,15 @@ namespace Auction.Management.Application.Services
 
                 var dtos = _mapper.Map<IEnumerable<VehicleDto>>(filtered);
 
+                _logger.LogInformation("{Count} vehicles found with applied filters", dtos.Count());
+
                 return Result<IEnumerable<VehicleDto>>.Success(dtos);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error searching for vehicles");
                 return Result<IEnumerable<VehicleDto>>.Failure(new Error(ex.Message));
             }
         }
-
     }
-
 }
