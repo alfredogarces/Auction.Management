@@ -15,6 +15,9 @@ namespace Auction.Management.Application.Services
         private readonly IBidderService _bidderService;
         private readonly IMapper _mapper;
 
+        private static readonly Dictionary<string, SemaphoreSlim> _auctionLocks = new();
+        private static readonly object _lockDictSync = new();
+
         public AuctionService(
             IAuctionRepository auctionRepository,
             IVehicleRepository vehicleRepository,
@@ -29,6 +32,9 @@ namespace Auction.Management.Application.Services
 
         public async Task<Result<AuctionDto>> StartAuctionAsync(string vehicleId)
         {
+            var semaphore = GetAuctionLock(vehicleId);
+            await semaphore.WaitAsync();
+
             try
             {
                 var vehicle = await _vehicleRepository.GetByIdAsync(vehicleId);
@@ -36,19 +42,11 @@ namespace Auction.Management.Application.Services
                     return Result<AuctionDto>.Failure(new Error($"Vehicle with ID {vehicleId} not found."));
 
                 var existingAuction = await _auctionRepository.GetByVehicleId(vehicleId);
-
                 AuctionServiceValidator.ValidateStartAuction(existingAuction);
 
-                Domain.Entities.Auction auction;
+                var auction = existingAuction ?? new Domain.Entities.Auction(vehicle);
                 if (existingAuction == null)
-                {
-                    auction = new Domain.Entities.Auction(vehicle);
                     await _auctionRepository.Add(auction);
-                }
-                else
-                {
-                    auction = existingAuction;
-                }
 
                 auction.Start();
                 await _auctionRepository.Update(auction);
@@ -60,10 +58,18 @@ namespace Auction.Management.Application.Services
             {
                 return Result<AuctionDto>.Failure(new Error(ex.Message));
             }
+            finally
+            {
+                semaphore.Release();
+            }
         }
+
 
         public async Task<Result<AuctionDto>> PlaceBidAsync(string vehicleId, BidDto bidDto)
         {
+            var semaphore = GetAuctionLock(vehicleId);
+            await semaphore.WaitAsync();
+
             try
             {
                 var auction = await _auctionRepository.GetByVehicleId(vehicleId);
@@ -75,7 +81,6 @@ namespace Auction.Management.Application.Services
                     return Result<AuctionDto>.Failure(new Error("Failed to find or create bidder."));
 
                 var bid = new Bid(bidderResult.Data!, bidDto.Amount);
-
                 auction.PlaceBid(bid);
                 await _auctionRepository.Update(auction);
 
@@ -85,6 +90,10 @@ namespace Auction.Management.Application.Services
             catch (Exception ex)
             {
                 return Result<AuctionDto>.Failure(new Error(ex.Message));
+            }
+            finally
+            {
+                semaphore.Release();
             }
         }
 
@@ -107,12 +116,14 @@ namespace Auction.Management.Application.Services
 
         public async Task<Result<AuctionDto>> CloseAuctionAsync(string vehicleId)
         {
+            var semaphore = GetAuctionLock(vehicleId);
+            await semaphore.WaitAsync();
+
             try
             {
                 var auction = await _auctionRepository.GetByVehicleId(vehicleId);
                 if (auction == null)
                     return Result<AuctionDto>.Failure(new Error($"There is no Auction for this vehicle {vehicleId}."));
-
 
                 auction.End();
                 await _auctionRepository.Update(auction);
@@ -124,7 +135,26 @@ namespace Auction.Management.Application.Services
             {
                 return Result<AuctionDto>.Failure(new Error(ex.Message));
             }
+            finally
+            {
+                semaphore.Release();
+            }
         }
+
+
+        private static SemaphoreSlim GetAuctionLock(string vehicleId)
+        {
+            lock (_lockDictSync)
+            {
+                if (!_auctionLocks.TryGetValue(vehicleId, out var semaphore))
+                {
+                    semaphore = new SemaphoreSlim(1, 1);
+                    _auctionLocks[vehicleId] = semaphore;
+                }
+                return semaphore;
+            }
+        }
+
 
     }
 }

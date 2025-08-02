@@ -11,11 +11,11 @@ namespace Auction.Management.Domain.Entities.Vehicles
         public int Year { get; set; }
         public decimal StartingBid { get; set; }
 
-        protected Vehicle(string id, string manufacturarer, string model, int year, decimal startingBid)
+        protected Vehicle(string id, string manufacturer, string model, int year, decimal startingBid)
         {
-            VehicleValidator.Validate(id, manufacturarer, model, year, startingBid);
+            VehicleValidator.Validate(id, manufacturer, model, year, startingBid);
             Id = id;
-            Manufacturer = manufacturarer;
+            Manufacturer = manufacturer;
             Model = model;
             Year = year;
             StartingBid = startingBid;

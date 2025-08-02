@@ -3,7 +3,7 @@
     public class InvalidVehicleIdException : ArgumentException
     {
         public InvalidVehicleIdException()
-            : base("Vehicle ID cannot be null or empty.")
+            : base("Invalid Vehicle ID")
         {
         }
     }

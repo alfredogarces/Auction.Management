@@ -30,8 +30,7 @@ namespace Auction.Management.Application.Services
 
                 await _vehicleRepository.AddAsync(vehicle);
 
-                var resultDto = _mapper.Map<VehicleDto>(vehicle);
-                return Result<VehicleDto>.Success(resultDto);
+                return Result<VehicleDto>.Success(vehicleDto);
             }
             catch (Exception ex)
             {
