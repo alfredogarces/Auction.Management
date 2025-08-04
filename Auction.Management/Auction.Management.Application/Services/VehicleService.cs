@@ -14,6 +14,8 @@ namespace Auction.Management.Application.Services
         private readonly IVehicleRepository _vehicleRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<VehicleService> _logger;
+        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+
 
         public VehicleService(
             IVehicleRepository vehicleRepository,
@@ -25,6 +27,7 @@ namespace Auction.Management.Application.Services
             _logger = logger;
         }
 
+
         public async Task<Result<VehicleDto>> AddVehicle(VehicleDto vehicleDto)
         {
             _logger.LogInformation("Adding new vehicle with ID {VehicleId}", vehicleDto.Id);
@@ -33,16 +36,15 @@ namespace Auction.Management.Application.Services
             {
                 var vehicle = _mapper.Map<Vehicle>(vehicleDto);
 
-                var existingVehicle = await _vehicleRepository.GetByIdAsync(vehicle.Id);
-                if (existingVehicle != null)
+                var added = await _vehicleRepository.AddAsync(vehicle);
+
+                if (!added)
                 {
-                    _logger.LogWarning("Vehicle with ID {VehicleId} already exists", vehicle.Id);
-                    return Result<VehicleDto>.Failure(new Error($"Vehicle with ID {vehicle.Id} already exists."));
+                    _logger.LogWarning("Vehicle with ID {VehicleId} already exists", vehicleDto.Id);
+                    return Result<VehicleDto>.Failure(new Error($"Vehicle with ID {vehicleDto.Id} already exists."));
                 }
 
-                await _vehicleRepository.AddAsync(vehicle);
-
-                _logger.LogInformation("Vehicle with ID {VehicleId} added successfully", vehicle.Id);
+                _logger.LogInformation("Vehicle with ID {VehicleId} added successfully", vehicleDto.Id);
 
                 return Result<VehicleDto>.Success(vehicleDto);
             }
@@ -52,6 +54,7 @@ namespace Auction.Management.Application.Services
                 return Result<VehicleDto>.Failure(new Error(ex.Message));
             }
         }
+
 
         public async Task<Result<IEnumerable<VehicleDto>>> SearchAsync(VehicleType? type = null,
                                                                         string? manufacturer = null,

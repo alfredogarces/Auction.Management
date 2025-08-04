@@ -4,25 +4,27 @@ using Auction.Management.Domain.Interfaces;
 using Auction.Management.Infrastructure.InMemoryRepositories;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using System.Linq;
 
-public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
+namespace Auction.Management.Tests.IntegrationTest
 {
-    protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
+    public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
     {
-        builder.ConfigureServices(services =>
+        protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
         {
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(IVehicleRepository));
-
-            if (descriptor != null)
+            builder.ConfigureServices(services =>
             {
-                services.Remove(descriptor);
-            }
+                var descriptor = services.SingleOrDefault(
+                    d => d.ServiceType == typeof(IVehicleRepository));
 
-            services.AddScoped<IVehicleRepository, InMemoryVehicleRepository>();
+                if (descriptor != null)
+                {
+                    services.Remove(descriptor);
+                }
 
-            services.AddScoped<IVehicleService, VehicleService>();
-        });
+                services.AddScoped<IVehicleRepository, InMemoryVehicleRepository>();
+
+                services.AddScoped<IVehicleService, VehicleService>();
+            });
+        }
     }
 }

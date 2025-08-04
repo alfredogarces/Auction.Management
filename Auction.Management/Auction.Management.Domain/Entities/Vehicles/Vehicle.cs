@@ -21,7 +21,20 @@ namespace Auction.Management.Domain.Entities.Vehicles
             StartingBid = startingBid;
         }
 
-        public abstract VehicleType GetVehicleType();
-    }
+        public override bool Equals(object? obj)
+        {
+            if (obj is not Vehicle other)
+                return false;
 
+            return Id == other.Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
+
+        public abstract VehicleType GetVehicleType();
+        public abstract Vehicle Clone();
+    }
 }

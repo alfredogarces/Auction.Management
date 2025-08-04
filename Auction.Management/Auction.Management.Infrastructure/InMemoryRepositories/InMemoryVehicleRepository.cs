@@ -1,39 +1,41 @@
 ﻿using Auction.Management.Domain.Entities.Vehicles;
 using Auction.Management.Domain.Interfaces;
+using System.Collections.Concurrent;
 
 namespace Auction.Management.Infrastructure.InMemoryRepositories
 {
     public class InMemoryVehicleRepository : IVehicleRepository
     {
-        private readonly List<Vehicle> _vehicles = new List<Vehicle>
-            {
-                new Sedan("AAAAAAAAAAAAAAAAA", "Toyota", "Camry", 2020, 15000m, 4),
-                new SUV("BBBBBBBBBBBBBBBBB", "Ford", "Explorer", 2021, 20000m, 7),
-                new Truck("CCCCCCCCCCCCCCCCC", "Volvo", "FH16", 2019, 50000m, 25000),
-                new Hatchback("DDDDDDDDDDDDDDDDD", "Volkswagen", "Golf", 2018, 12000m, 5)
-            };
-
-        public Task AddAsync(Vehicle vehicle)
+        private readonly ConcurrentDictionary<string, Vehicle> _vehicles = new()
         {
-            _vehicles.Add(vehicle);
-            return Task.CompletedTask;
+            ["AAAAAAAAAAAAAAAAA"] = new Sedan("AAAAAAAAAAAAAAAAA", "Toyota", "Camry", 2020, 15000m, 4),
+            ["BBBBBBBBBBBBBBBBB"] = new SUV("BBBBBBBBBBBBBBBBB", "Ford", "Explorer", 2021, 20000m, 7),
+            ["CCCCCCCCCCCCCCCCC"] = new Truck("CCCCCCCCCCCCCCCCC", "Volvo", "FH16", 2019, 50000m, 25000),
+            ["DDDDDDDDDDDDDDDDD"] = new Hatchback("DDDDDDDDDDDDDDDDD", "Volkswagen", "Golf", 2018, 12000m, 5)
+        };
+
+        public Task<bool> AddAsync(Vehicle vehicle)
+        {
+            var added = _vehicles.TryAdd(vehicle.Id, vehicle.Clone());
+            return Task.FromResult(added);
         }
 
         public Task<Vehicle?> GetByIdAsync(string id)
         {
-            var vehicle = _vehicles.FirstOrDefault(v => v.Id == id);
-            return Task.FromResult(vehicle);
+            _vehicles.TryGetValue(id, out var vehicle);
+            return Task.FromResult(vehicle?.Clone());
         }
 
         public Task<bool> ExistsAsync(string id)
         {
-            var exists = _vehicles.Any(v => v.Id == id);
+            var exists = _vehicles.ContainsKey(id);
             return Task.FromResult(exists);
         }
 
         public Task<IEnumerable<Vehicle>> GetAllAsync()
         {
-            return Task.FromResult<IEnumerable<Vehicle>>(_vehicles.ToList());
+            var clones = _vehicles.Values.Select(v => v.Clone()).ToList();
+            return Task.FromResult<IEnumerable<Vehicle>>(clones);
         }
     }
 }

@@ -9,19 +9,20 @@ namespace Auction.Management.Infrastructure.InMemoryRepositories
 
         public Task AddAsync(Bidder bidder)
         {
-            _bidders.Add(bidder);
+            _bidders.Add(bidder.Clone());
             return Task.CompletedTask;
         }
 
         public Task<Bidder?> GetByEmailAsync(string email)
         {
             var bidder = _bidders.FirstOrDefault(b => b.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
-            return Task.FromResult(bidder);
+            return Task.FromResult(bidder?.Clone());
         }
 
         public Task<IEnumerable<Bidder>> GetAllAsync()
         {
-            return Task.FromResult<IEnumerable<Bidder>>(_bidders.ToList());
+            var clones = _bidders.Select(b => b.Clone()).ToList();
+            return Task.FromResult<IEnumerable<Bidder>>(clones);
         }
     }
 }

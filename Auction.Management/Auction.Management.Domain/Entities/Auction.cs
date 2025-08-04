@@ -45,5 +45,13 @@ namespace Auction.Management.Domain.Entities
 
             HighestBid = bid;
         }
+
+        public Auction Clone()
+        {
+            var auction = new Domain.Entities.Auction(Vehicle.Clone());
+            auction.IsActive = IsActive;
+            auction.HighestBid = HighestBid?.Clone();
+            return auction;
+        }
     }
 }

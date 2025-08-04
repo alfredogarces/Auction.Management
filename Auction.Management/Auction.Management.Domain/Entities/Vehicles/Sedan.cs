@@ -18,5 +18,18 @@ namespace Auction.Management.Domain.Entities.Vehicles
         {
             return VehicleType.Sedan;
         }
+
+        public override Vehicle Clone()
+        {
+            return new Sedan(
+                Id,
+                Manufacturer,
+                Model,
+                Year,
+                StartingBid,
+                NumberOfDoors
+            );
+        }
+
     }
 }

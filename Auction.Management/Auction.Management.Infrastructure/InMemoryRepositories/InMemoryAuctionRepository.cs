@@ -1,36 +1,34 @@
 ﻿using Auction.Management.Domain.Interfaces;
+using System.Collections.Concurrent;
 
 namespace Auction.Management.Infrastructure.InMemoryRepositories
 {
     public class InMemoryAuctionRepository : IAuctionRepository
     {
-        private readonly List<Domain.Entities.Auction> _auctions = new();
+        private readonly ConcurrentDictionary<string, Domain.Entities.Auction> _auctions = new();
 
         public Task Add(Domain.Entities.Auction auction)
         {
-            _auctions.Add(auction);
+            _auctions.TryAdd(auction.Vehicle.Id, auction.Clone());
             return Task.CompletedTask;
         }
 
         public Task<Domain.Entities.Auction?> GetByVehicleId(string vehicleId)
         {
-            var auction = _auctions.FirstOrDefault(a => a.Vehicle.Id == vehicleId);
-            return Task.FromResult(auction);
+            _auctions.TryGetValue(vehicleId, out var auction);
+            return Task.FromResult(auction?.Clone());
         }
 
         public Task<IEnumerable<Domain.Entities.Auction>> GetAll()
         {
-            return Task.FromResult<IEnumerable<Domain.Entities.Auction>>(_auctions.ToList());
+            var clones = _auctions.Values.Select(a => a.Clone()).ToList();
+            return Task.FromResult<IEnumerable<Domain.Entities.Auction>>(clones);
         }
 
-        public async Task Update(Domain.Entities.Auction auction)
+        public Task Update(Domain.Entities.Auction auction)
         {
-            var existing = await GetByVehicleId(auction.Vehicle.Id);
-            if (existing != null)
-            {
-                _auctions.Remove(existing);
-                _auctions.Add(auction);
-            }
+            _auctions.AddOrUpdate(auction.Vehicle.Id, auction.Clone(), (key, old) => auction.Clone());
+            return Task.CompletedTask;
         }
     }
 }

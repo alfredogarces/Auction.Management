@@ -18,6 +18,19 @@ namespace Auction.Management.Domain.Entities.Vehicles
         {
             return VehicleType.Hatchback;
         }
+
+        public override Vehicle Clone()
+        {
+            return new Hatchback(
+                Id,
+                Manufacturer,
+                Model,
+                Year,
+                StartingBid,
+                NumberOfDoors
+            );
+        }
+
     }
 
 }

@@ -11,6 +11,17 @@ namespace Auction.Management.Tests.UnitTests.Domain.Entities
         {
         }
 
+        public override Vehicle Clone()
+        {
+            return new TestVehicle(
+                Id,
+                Manufacturer,
+                Model,
+                Year,
+                StartingBid
+            );
+        }
+
         public override VehicleType GetVehicleType()
         {
             return VehicleType.Sedan;

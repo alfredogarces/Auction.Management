@@ -12,5 +12,10 @@ namespace Auction.Management.Domain.Entities
             BidderValidator.Validate(email);
             Email = email;
         }
+
+        public Bidder Clone()
+        {
+            return new Bidder(Email);
+        }
     }
 }

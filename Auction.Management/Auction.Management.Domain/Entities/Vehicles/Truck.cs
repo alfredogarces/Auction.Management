@@ -18,6 +18,19 @@ namespace Auction.Management.Domain.Entities.Vehicles
         {
             return VehicleType.Truck;
         }
+
+        public override Vehicle Clone()
+        {
+            return new Truck(
+                Id,
+                Manufacturer,
+                Model,
+                Year,
+                StartingBid,
+                LoadCapacity
+            );
+        }
+
     }
 
 }

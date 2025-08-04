@@ -44,7 +44,7 @@ namespace Auction.Management.Tests.UnitTests.Application
 
             _mapperMock.Setup(m => m.Map<Vehicle>(vehicleDto)).Returns(vehicle);
             _vehicleRepositoryMock.Setup(r => r.GetByIdAsync(vehicle.Id)).ReturnsAsync((Vehicle?)null);
-            _vehicleRepositoryMock.Setup(r => r.AddAsync(vehicle)).Returns(Task.CompletedTask);
+            _vehicleRepositoryMock.Setup(r => r.AddAsync(vehicle)).ReturnsAsync(true);
             _mapperMock.Setup(m => m.Map<VehicleDto>(vehicle)).Returns(vehicleDto);
 
             var service = CreateService();

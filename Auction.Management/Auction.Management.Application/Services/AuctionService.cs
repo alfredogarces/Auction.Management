@@ -6,6 +6,7 @@ using Auction.Management.Domain.Entities;
 using Auction.Management.Domain.Interfaces;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 
 namespace Auction.Management.Application.Services
 {
@@ -17,8 +18,7 @@ namespace Auction.Management.Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<AuctionService> _logger;
 
-        private static readonly Dictionary<string, SemaphoreSlim> _auctionLocks = new();
-        private static readonly object _lockDictSync = new();
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> _auctionLocks = new();
 
         public AuctionService(
             IAuctionRepository auctionRepository,
@@ -191,15 +191,7 @@ namespace Auction.Management.Application.Services
 
         private static SemaphoreSlim GetAuctionLock(string vehicleId)
         {
-            lock (_lockDictSync)
-            {
-                if (!_auctionLocks.TryGetValue(vehicleId, out var semaphore))
-                {
-                    semaphore = new SemaphoreSlim(1, 1);
-                    _auctionLocks[vehicleId] = semaphore;
-                }
-                return semaphore;
-            }
+            return _auctionLocks.GetOrAdd(vehicleId, _ => new SemaphoreSlim(1, 1));
         }
     }
 }

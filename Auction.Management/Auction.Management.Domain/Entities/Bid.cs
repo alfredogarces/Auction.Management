@@ -14,5 +14,10 @@ namespace Auction.Management.Domain.Entities
             Bidder = bidder;
             Amount = amount;
         }
+
+        public Bid Clone()
+        {
+            return new Bid (Bidder.Clone(), Amount);
+        }
     }
 }
