@@ -4,7 +4,7 @@ namespace Auction.Management.Domain.Interfaces
 {
     public interface IBidderRepository
     {
-        Task AddAsync(Bidder bidder);
+        Task<bool> AddAsync(Bidder bidder);
         Task<Bidder?> GetByEmailAsync(string email);
         Task<IEnumerable<Bidder>> GetAllAsync();
     }
