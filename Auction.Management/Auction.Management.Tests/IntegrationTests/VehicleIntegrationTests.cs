@@ -17,87 +17,92 @@ public class VehicleControllerIntegrationTests : IClassFixture<CustomWebApplicat
     [Fact]
     public async Task AddSUV_ShouldReturnCreated_WhenValid()
     {
-        var suvDto = new SuvDto
-        (
-           "AAAAAAAAAAAAAAAAB",
-           "Jeep",
-           "Cherokee",
-           2023,
-           25000m,
-           5
-        );
+        var suvDto = new
+        {
+            vehicleType = "SUV",
+            id = "AAAAAAAAAAAAAAAAY",
+            manufacturer = "Ford",
+            model = "Explorer",
+            year = 2021,
+            startingBid = 20000,
+            numberOfSeats = 7
+        };
 
-        var response = await _client.PostAsJsonAsync("api/vehicle/suv", suvDto);
+        var response = await _client.PostAsJsonAsync("/api/vehicle", suvDto);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.Created);
 
         var responseData = await response.Content.ReadFromJsonAsync<SuvDto>();
         responseData.Should().NotBeNull();
-        responseData.Id.Should().Be(suvDto.Id);
-    }
-
-    [Fact]
-    public async Task AddSedan_ShouldReturnCreated_WhenValid()
-    {
-        var sedanDto = new SedanDto(
-           "AAAAAAAAAAAAAAAAC",
-           "Toyota",
-           "Camry",
-           2022,
-           22000m,
-           4
-        );
-
-        var response = await _client.PostAsJsonAsync("api/vehicle/sedan", sedanDto);
-
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Created);
-
-        var responseData = await response.Content.ReadFromJsonAsync<SedanDto>();
-        responseData.Should().NotBeNull();
-        responseData.Id.Should().Be(sedanDto.Id);
+        responseData.Id.Should().Be(suvDto.id);
     }
 
     [Fact]
     public async Task AddTruck_ShouldReturnCreated_WhenValid()
     {
-        var truckDto = new TruckDto(
-           "AAAAAAAAAAAAAAAAD",
-           "Volvo",
-           "FH16",
-           2021,
-           80000m,
-           25000.5
-        );
+        var truckDto = new
+        {
+            vehicleType = "Truck",
+            id = "AAAAAAAAAAAAAAAAR",
+            manufacturer = "Volvo",
+            model = "FH16",
+            year = 2020,
+            startingBid = 80000,
+            loadCapacity = 25.5
+        };
 
-        var response = await _client.PostAsJsonAsync("api/vehicle/truck", truckDto);
-
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Created);
+        var response = await _client.PostAsJsonAsync("/api/vehicle", truckDto);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var responseData = await response.Content.ReadFromJsonAsync<TruckDto>();
         responseData.Should().NotBeNull();
-        responseData.Id.Should().Be(truckDto.Id);
+        responseData!.Id.Should().Be(truckDto.id);
+    }
+
+    [Fact]
+    public async Task AddSedan_ShouldReturnCreated_WhenValid()
+    {
+        var sedanDto = new
+        {
+            vehicleType = "Sedan",
+            id = "AAAAAAAAAAAAAAAAS",
+            manufacturer = "Toyota",
+            model = "Camry",
+            year = 2022,
+            startingBid = 30000,
+            numberOfDoors = 4
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/vehicle", sedanDto);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var responseData = await response.Content.ReadFromJsonAsync<SedanDto>();
+        responseData.Should().NotBeNull();
+        responseData!.Id.Should().Be(sedanDto.id);
     }
 
     [Fact]
     public async Task AddHatchback_ShouldReturnCreated_WhenValid()
     {
-        var hatchbackDto = new HatchbackDto(
-           "AAAAAAAAAAAAAAAAD",
-           "Volkswagen",
-           "Golf",
-           2023,
-           18000m,
-           3
-        );
+        var hatchbackDto = new
+        {
+            vehicleType = "Hatchback",
+            id = "AAAAAAAAAAAAAAAAT",
+            manufacturer = "Volkswagen",
+            model = "Golf",
+            year = 2019,
+            startingBid = 18000,
+            numberOfDoors = 4
+        };
 
-        var response = await _client.PostAsJsonAsync("api/vehicle/hatchback", hatchbackDto);
-
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Created);
+        var response = await _client.PostAsJsonAsync("/api/vehicle", hatchbackDto);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var responseData = await response.Content.ReadFromJsonAsync<HatchbackDto>();
         responseData.Should().NotBeNull();
-        responseData.Id.Should().Be(hatchbackDto.Id);
+        responseData!.Id.Should().Be(hatchbackDto.id);
     }
+
     [Fact]
     public async Task GetVehicles_ShouldReturnPolymorphicVehicleDtos()
     {

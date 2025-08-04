@@ -4,6 +4,7 @@ using Auction.Management.Domain.Entities.Vehicles;
 using Auction.Management.Domain.Enums;
 using Auction.Management.Domain.Interfaces;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Auction.Management.Tests.UnitTests.Application
@@ -14,8 +15,9 @@ namespace Auction.Management.Tests.UnitTests.Application
     {
         private readonly Mock<IVehicleRepository> _vehicleRepositoryMock = new();
         private readonly Mock<IMapper> _mapperMock = new();
+        private readonly Mock<ILogger<VehicleService>> _loggerMock = new();
 
-        private VehicleService CreateService() => new(_vehicleRepositoryMock.Object, _mapperMock.Object);
+        private VehicleService CreateService() => new(_vehicleRepositoryMock.Object, _mapperMock.Object, _loggerMock.Object);
 
         [Fact]
         public async Task AddVehicle_ShouldReturnFailure_WhenVehicleExists()

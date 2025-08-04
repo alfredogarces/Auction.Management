@@ -16,61 +16,20 @@ namespace Auction.Management.Controllers
             _vehicleService = vehicleService;
         }
 
-        [HttpPost("suv")]
-        public async Task<IActionResult> AddSUV([FromBody] SuvDto suvDto)
+        [HttpPost]
+        public async Task<IActionResult> AddVehicle([FromBody] VehicleDto vehicleDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _vehicleService.AddVehicle(suvDto);
+            var result = await _vehicleService.AddVehicle(vehicleDto);
 
             if (result.IsFailure)
                 return BadRequest(result.Errors);
 
-            return CreatedAtAction(nameof(AddSUV), new { id = suvDto.Id }, result.Data);
+            return CreatedAtAction(nameof(AddVehicle), new { id = vehicleDto.Id }, result.Data);
         }
 
-        [HttpPost("sedan")]
-        public async Task<IActionResult> AddSedan([FromBody] SedanDto sedanDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _vehicleService.AddVehicle(sedanDto);
-
-            if (result.IsFailure)
-                return BadRequest(result.Errors);
-
-            return CreatedAtAction(nameof(AddSedan), new { id = sedanDto.Id }, result.Data);
-        }
-
-        [HttpPost("truck")]
-        public async Task<IActionResult> AddTruck([FromBody] TruckDto truckDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _vehicleService.AddVehicle(truckDto);
-
-            if (result.IsFailure)
-                return BadRequest(result.Errors);
-
-            return CreatedAtAction(nameof(AddTruck), new { id = truckDto.Id }, result.Data);
-        }
-
-        [HttpPost("hatchback")]
-        public async Task<IActionResult> AddHatchback([FromBody] HatchbackDto hatchbackDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _vehicleService.AddVehicle(hatchbackDto);
-
-            if (result.IsFailure)
-                return BadRequest(result.Errors);
-
-            return CreatedAtAction(nameof(AddHatchback), new { id = hatchbackDto.Id }, result.Data);
-        }
         [HttpGet]
         public async Task<IActionResult> GetVehicles(
                                                     [FromQuery] VehicleType? type = null,

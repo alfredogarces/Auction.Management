@@ -6,6 +6,7 @@ using Auction.Management.Domain.Entities;
 using Auction.Management.Domain.Entities.Vehicles;
 using Auction.Management.Domain.Interfaces;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Auction.Management.Tests.UnitTests.Application
@@ -16,9 +17,10 @@ namespace Auction.Management.Tests.UnitTests.Application
         private readonly Mock<IVehicleRepository> _vehicleRepoMock = new();
         private readonly Mock<IBidderService> _bidderServiceMock = new();
         private readonly Mock<IMapper> _mapperMock = new();
+        private readonly Mock<ILogger<AuctionService>> _loggerMock = new();
 
         private AuctionService CreateService() =>
-            new(_auctionRepoMock.Object, _vehicleRepoMock.Object, _bidderServiceMock.Object, _mapperMock.Object);
+            new(_auctionRepoMock.Object, _vehicleRepoMock.Object, _bidderServiceMock.Object, _mapperMock.Object, _loggerMock.Object);
 
         [Fact]
         public async Task StartAuctionAsync_ShouldStartAuction_WhenVehicleExistsAndAuctionNotStarted()
